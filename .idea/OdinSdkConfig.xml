@@ -4,7 +4,7 @@
     <option name="sdkPath" value="/opt/homebrew/bin" />
     <option name="semanticAnnotatorEnabled" value="true" />
     <option name="odinCheckerEnabled" value="true" />
-    <option name="debuggerId" value="odin-lldb-dap" />
+    <option name="debuggerId" value="lldb-bundled" />
     <option name="highlightUnknownReferencesEnabled" value="false" />
     <option name="conditionalSymbolResolutionEnabled" value="false" />
     <option name="cacheEnabled" value="false" />
