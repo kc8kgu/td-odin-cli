@@ -1,0 +1,23 @@
+# Odin build artifacts
+*.bin
+*.exe
+*.pdb
+*.dll
+*.dylib
+*.so
+*.a
+*.lib
+*.obj
+*.o
+
+# Odin debug info
+*.dSYM/
+
+# Editor / IDE
+#.idea/
+#.vscode/
+
+# OS
+.DS_Store
+
+bin/
