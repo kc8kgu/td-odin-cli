@@ -10,103 +10,112 @@ todo :: struct {
 	title: string
 }
 
+todos: [dynamic]todo
+
+PATH : string = "./todo.json"
+
+/*
 Error :: union {
     os.Error,
     json.Unmarshal_Error,
 	json.Marshal_Error
 }
+*/
 
 main :: proc() {
+
 	argc := len(os.args)
 	argv := os.args
-
-	err: Error = nil
 
 	if argc == 1 {
 		usage();
 	} else if argc == 2 && argv[1] == "list" {
-		_ = list_todos()
+		list_todos()
 	} else if argc == 3 && argv[1] == "add" {
-		_ = add_todos(argv[2])
+		add_todos(argv[2])
 	}
-
 }
 
 usage :: proc () {
+
 	fmt.println("usage:  td <list|add|edit|done|delete|clear> <id> <title>")
+
 }
 
-load_todos :: proc (todos: ^[dynamic]todo ) -> Error {
+load_todos :: proc () {
+
+	if !os.exists(PATH) {
+		file, os_err := os.create(PATH)
+		if os_err != nil {
+			fmt.eprintfln("os error: %s", os_err)
+			os.exit(1)
+		}
+		os.close(file)
+		return // dont try to load an empty file
+	}
 
 	data, os_err := os.read_entire_file("./todo.json", context.allocator)
 	if os_err != nil {
 		fmt.eprintfln("os error: %s", os_err)
-
-		return os_err
+		os.exit(1)
 	}
 	defer delete(data)
 
-	json_err := json.unmarshal(data, todos)
+	json_err := json.unmarshal(data, &todos)
 	if json_err != nil {
 		fmt.eprintfln("json_error: %s", json_err)
-		return json_err
+		os.exit(1)
 	}
-
-	return nil
 }
 
-save_todos :: proc (todos: ^[dynamic]todo) -> Error {
+save_todos :: proc () {
 
-	data, json_err := json.marshal(todos^)
+	data, json_err := json.marshal(todos)
 	if json_err != nil {
 		fmt.eprintfln("json error: %s", json_err)
-		return json_err
+		os.exit(1)
 	}
 	defer delete(data)
 
 	os_err := os.write_entire_file_from_bytes("todo.json", data)
 	if os_err != nil {
 		fmt.eprintfln("os error: %s", json_err)
-		return os_err
+		os.exit(1)
 	}
-
-	return nil
 }
 
-list_todos :: proc() -> Error {
+get_next_id :: proc() -> int {
 
-	todos : [dynamic] todo
-	defer delete(todos)
+	max_id: int = 0
 
-	err := load_todos(&todos)
-	if err != nil {
-		return err
+	for td in todos {
+		if td.id > max_id {
+			max_id = td.id
+		}
 	}
+
+	return 1 + max_id
+}
+
+list_todos :: proc() {
+
+	load_todos()
+
 	for td in todos {
 		fmt.println(td)
 	}
-
-	return nil
 }
 
-add_todos :: proc (title: string) -> Error {
+add_todos :: proc (title: string) {
 
-	todos : [dynamic] todo
-	defer delete(todos)
+	load_todos()
 
-	err := load_todos(&todos)
-	if err != nil {
-		return err
-	}
+	next_id := get_next_id()
+	new_todo := todo{1, false, title}
 
-	new_todo := todo{3, false, title}
 	append(&todos, new_todo) 
 	
-	err = save_todos(&todos)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	save_todos()
 }
+
 
