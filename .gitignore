@@ -1,3 +1,5 @@
+todo.json
+
 # Odin build artifacts
 *.bin
 *.exe
@@ -14,7 +16,7 @@
 *.dSYM/
 
 # Editor / IDE
-#.idea/
+.idea/
 #.vscode/
 
 # OS

@@ -2,6 +2,7 @@ package main
 
 import "core:fmt"
 import "core:os"
+import "core:strconv"
 import "core:encoding/json"
 
 todo :: struct {
@@ -14,13 +15,6 @@ todos: [dynamic]todo
 
 PATH : string = "./todo.json"
 
-/*
-Error :: union {
-    os.Error,
-    json.Unmarshal_Error,
-	json.Marshal_Error
-}
-*/
 
 main :: proc() {
 
@@ -32,7 +26,15 @@ main :: proc() {
 	} else if argc == 2 && argv[1] == "list" {
 		list_todos()
 	} else if argc == 3 && argv[1] == "add" {
-		add_todos(argv[2])
+		add_todo(argv[2])
+	} else if argc == 4 && argv[1] == "edit" {
+		edit_todo(argv[2], argv[3])
+	} else if argc == 3 && argv[1] == "done" {
+		done_todo(argv[2])
+	} else if argc == 3 && argv[1] == "delete" {
+		delete_todo(argv[2])
+	} else if argc == 2 && argv[1] == "clear" {
+		clear_todo()
 	}
 }
 
@@ -102,20 +104,89 @@ list_todos :: proc() {
 	load_todos()
 
 	for td in todos {
-		fmt.println(td)
+		fmt.printf("%v, %v, %v \n", td.id, td.done, td.title)
 	}
 }
 
-add_todos :: proc (title: string) {
+add_todo :: proc (title: string) {
 
 	load_todos()
 
 	next_id := get_next_id()
-	new_todo := todo{1, false, title}
+	new_todo := todo{next_id, false, title}
 
 	append(&todos, new_todo) 
 	
 	save_todos()
 }
 
+edit_todo :: proc (idstr: string, title: string) {
+
+	id, ok := strconv.parse_int(idstr)
+
+	if !ok {
+		return
+	}
+
+	load_todos()
+
+	for &td in todos {
+		if id == td.id {
+			td.title = title
+		}
+	}
+
+	save_todos()
+}
+
+done_todo :: proc (idstr: string) {
+
+	id, ok := strconv.parse_int(idstr)
+
+	if !ok {
+		return
+	}
+
+	load_todos()
+
+	for &td in todos {
+		if id == td.id {
+			td.done = !td.done
+		}
+	}
+
+	save_todos()
+
+}
+
+delete_todo :: proc (idstr: string) {
+
+	id, ok := strconv.parse_int(idstr)
+
+	if !ok {
+		return
+	}
+
+	load_todos()
+	
+	found: bool = false
+	i: int = 0
+
+	for td, idx in todos {
+		if id == td.id {
+			i = idx
+			found = true
+			break
+		}
+	}
+
+	if found {
+		ordered_remove_dynamic_array(&todos, i)
+		save_todos()
+	}
+}
+
+clear_todo :: proc () {
+	os.remove(PATH)
+}
 

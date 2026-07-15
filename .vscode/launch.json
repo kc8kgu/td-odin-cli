@@ -7,8 +7,7 @@
             "name": "Debug Odin Program",
             "program": "${workspaceFolder}/${workspaceRootFolderName}",
             "args": [
-                "add",
-                "git init"
+                "list"
             ],
             "cwd": "${workspaceFolder}",
             "preLaunchTask": "Build Odin Debug",
